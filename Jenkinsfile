@@ -248,7 +248,7 @@ print('OK:', '$f')
 
                 # Vérifie si tous les packages sont déjà installés
                 echo "Vérification des packages..."
-                MISSING=$("$PIP" install --dry-run -r requirements.txt -q 2>&1 | grep "Would install" || echo "")
+                MISSING=$("$PIP" install --dry-run -r requirements.txt 2>&1 | grep "Would install" || echo "")
 
                 if [ -z "$MISSING" ]; then
                     echo "Tous les packages déjà installés — rien à faire."
