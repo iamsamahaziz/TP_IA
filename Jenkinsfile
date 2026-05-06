@@ -17,9 +17,6 @@ pipeline {
 
     environment {
         BOTPRESS_URL = 'https://cdn.botpress.cloud'
-        VENV         = "${WORKSPACE}/venv"
-        PYTHON       = "${WORKSPACE}/venv/bin/python"
-        PIP          = "${WORKSPACE}/venv/bin/pip"
     }
 
     stages {
@@ -43,6 +40,7 @@ pipeline {
                         env.N8N_CONTAINER = 'fstm_n8n'
                         env.QDRANT_URL = 'http://qdrant:6333'
                         env.N8N_URL = 'http://n8n:5678'
+                        env.VENV = "/var/jenkins_home/venv/projet_ia"
                     } else {
                         // Configuration d'Isolation (Branches Feature)
                         env.IS_MAIN = 'false'
@@ -52,6 +50,7 @@ pipeline {
                         env.N8N_CONTAINER = "n8n_${env.BRANCH_SLUG}"
                         env.QDRANT_URL = "http://qdrant_${env.BRANCH_SLUG}:6333"
                         env.N8N_URL = "http://n8n_${env.BRANCH_SLUG}:5678"
+                        env.VENV = "/var/jenkins_home/venv/projet_ia_${env.BRANCH_SLUG}"
 
                         // Validation de la clé Mistral en mode interactif
                         if (!params.MISTRAL_KEY) {
@@ -59,6 +58,9 @@ pipeline {
                         }
                         env.MISTRAL_KEY_VALUE = params.MISTRAL_KEY
                     }
+
+                    env.PYTHON = "${env.VENV}/bin/python"
+                    env.PIP    = "${env.VENV}/bin/pip"
 
                     checkout scm
                 }
