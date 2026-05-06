@@ -113,20 +113,20 @@ ensure_collection()
 
 
 # =========================
-# 🔁 EMBEDDING LOOP
+# 🔁 EMBEDDING BATCH PIPELINE
 # =========================
-for i, doc in enumerate(docs):
-
-    print(f"📄 Traitement ({i+1}/{len(docs)}) : {doc['type']}")
+if docs:
+    print("🧠 Génération des embeddings par lots (Batching)...")
+    inputs = [doc["content"] for doc in docs]
 
     @retry(tries=3, delay=2, backoff=2)
-    def call_mistral(text):
+    def call_mistral_batch(text_list):
         resp = requests.post(
             "https://api.mistral.ai/v1/embeddings",
             headers={"Authorization": f"Bearer {MISTRAL_KEY}"},
             json={
                 "model": "mistral-embed",
-                "input": [text]
+                "input": text_list
             }
         )
 
@@ -136,41 +136,35 @@ for i, doc in enumerate(docs):
         return resp
 
     try:
-        resp = call_mistral(doc["content"])
-    except Exception as e:
-        print(f"❌ Erreur Mistral sur {doc['type']} : {e}")
-        continue
-
-    if resp.status_code != 200:
-        print(f"❌ Erreur Mistral API: {resp.text}")
-        continue
-
-    emb = resp.json()["data"][0]["embedding"]
-
-    try:
-        qdrant_resp = requests.put(
-            f"{QDRANT_URL}/collections/AdminBot/points",
-            json={
-                "points": [{
+        resp = call_mistral_batch(inputs)
+        if resp.status_code == 200:
+            embeddings_data = resp.json()["data"]
+            points = []
+            
+            for i, doc in enumerate(docs):
+                emb = embeddings_data[i]["embedding"]
+                points.append({
                     "id": i + 1,
                     "vector": emb,
                     "payload": {
                         "content": doc["content"],
                         "type": doc["type"]
                     }
-                }]
-            }
-        )
+                })
+            
+            print(f"📡 Envoi de {len(points)} points vers Qdrant...")
+            qdrant_resp = requests.put(
+                f"{QDRANT_URL}/collections/AdminBot/points",
+                json={"points": points}
+            )
 
-        if qdrant_resp.status_code not in [200, 201]:
-            print(f"❌ Qdrant error: {qdrant_resp.text}")
-            continue
-
-        print(f"✅ {doc['type']} indexé")
-
+            if qdrant_resp.status_code in [200, 201]:
+                print(f"✅ {len(points)} documents indexés avec succès dans Qdrant !")
+            else:
+                print(f"❌ Qdrant error: {qdrant_resp.text}")
+        else:
+            print(f"❌ Erreur Mistral API: {resp.text}")
     except Exception as e:
-        print(f"❌ Erreur Qdrant: {e}")
-
-    time.sleep(1.2)
+        print(f"❌ Erreur lors du traitement par lots : {e}")
 
 print("🎉 Pipeline terminé avec succès !")
