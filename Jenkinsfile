@@ -75,7 +75,7 @@ pipeline {
                 find . -name "*.json" ! -path "*/venv/*" ! -path "*/.git/*" -exec python3 -m json.tool {} + > /dev/null && echo "JSON : OK"
 
                 echo "=== YAML ==="
-                find . \( -name "*.yml" -o -name "*.yaml" \) ! -path "*/venv/*" ! -path "*/.git/*" -exec python3 -c "import sys,yaml; yaml.safe_load(open(sys.argv[1]))" {} \; && echo "YAML : OK"
+                find . \\( -name "*.yml" -o -name "*.yaml" \\) ! -path "*/venv/*" ! -path "*/.git/*" -exec python3 -c "import sys,yaml; yaml.safe_load(open(sys.argv[1]))" {} \\; && echo "YAML : OK"
 
                 echo "=== HTML ==="
                 find . -name "*.html" ! -path "*/venv/*" ! -path "*/.git/*" | while read f; do
