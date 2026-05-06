@@ -243,8 +243,19 @@ print('OK:', '$f')
             steps {
                 sh '''
                 [ ! -d "$VENV" ] && python3 -m venv "$VENV"
-                "$PIP" install --upgrade pip --quiet
-                "$PIP" install -r requirements.txt --quiet --cache-dir "$WORKSPACE/.pip_cache"
+
+                # Vérifie si tous les packages sont déjà installés
+                echo "Vérification des packages..."
+                MISSING=$("$PIP" install --dry-run -r requirements.txt -q 2>&1 | grep "Would install" || echo "")
+
+                if [ -z "$MISSING" ]; then
+                    echo "Tous les packages déjà installés — rien à faire."
+                else
+                    echo "Packages manquants : $MISSING"
+                    "$PIP" install --upgrade pip -q
+                    "$PIP" install -r requirements.txt -q --cache-dir "/var/jenkins_home/.pip_cache"
+                    echo "Installation terminée avec succès."
+                fi
                 '''
             }
         }
