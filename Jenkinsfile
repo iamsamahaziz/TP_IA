@@ -293,6 +293,13 @@ print(len(cols))
     post {
         success {
             echo "Succès sur la branche ${env.BRANCH_SLUG} !"
+            script {
+                if (env.IS_MAIN == 'false') {
+                    echo "Succès détecté sur branche feature : Nettoyage des conteneurs éphémères..."
+                    sh "docker stop qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
+                    sh "docker rm   qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
+                }
+            }
         }
         failure {
             script {
