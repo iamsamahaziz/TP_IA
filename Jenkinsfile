@@ -27,7 +27,7 @@ pipeline {
                     // Détection et standardisation du nom de la branche
                     def rawBranch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: "main"
                     def cleanBranch = rawBranch.split('/')[-1]
-                    env.BRANCH_SLUG = cleanBranch.replaceAll('[^a-zA-Z0-9]', '_').toLowerCase()
+                    env.BRANCH_SLUG = cleanBranch.replaceAll('[^a-zA-Z0-9]', '-').toLowerCase()
 
                     echo "Branche détectée : ${env.BRANCH_SLUG}"
 
@@ -46,10 +46,10 @@ pipeline {
                         env.IS_MAIN = 'false'
                         env.QDRANT_PORT = "${10000 + env.BUILD_NUMBER.toInteger()}"
                         env.N8N_PORT = "${20000 + env.BUILD_NUMBER.toInteger()}"
-                        env.QDRANT_CONTAINER = "qdrant_${env.BRANCH_SLUG}"
-                        env.N8N_CONTAINER = "n8n_${env.BRANCH_SLUG}"
-                        env.QDRANT_URL = "http://qdrant_${env.BRANCH_SLUG}:6333"
-                        env.N8N_URL = "http://n8n_${env.BRANCH_SLUG}:5678"
+                        env.QDRANT_CONTAINER = "qdrant-${env.BRANCH_SLUG}"
+                        env.N8N_CONTAINER = "n8n-${env.BRANCH_SLUG}"
+                        env.QDRANT_URL = "http://qdrant-${env.BRANCH_SLUG}:6333"
+                        env.N8N_URL = "http://n8n-${env.BRANCH_SLUG}:5678"
                         env.VENV = "/var/jenkins_home/venv/projet_ia_${env.BRANCH_SLUG}"
 
                         // Validation de la clé Mistral en mode interactif
@@ -171,11 +171,11 @@ print('OK:', '$f')
                     } else {
                         // En développement, nettoyage systématique pour un déploiement éphémère à neuf
                         sh '''
-                        docker stop qdrant_${BRANCH_SLUG} n8n_${BRANCH_SLUG} || true
-                        docker rm   qdrant_${BRANCH_SLUG} n8n_${BRANCH_SLUG} || true
+                        docker stop qdrant-${BRANCH_SLUG} n8n-${BRANCH_SLUG} || true
+                        docker rm   qdrant-${BRANCH_SLUG} n8n-${BRANCH_SLUG} || true
 
-                        docker run -d --name qdrant_${BRANCH_SLUG} --network fstm_network --network-alias qdrant_${BRANCH_SLUG} -p ${QDRANT_PORT}:6333 qdrant/qdrant:latest
-                        docker run -d --name n8n_${BRANCH_SLUG}    --network fstm_network --network-alias n8n_${BRANCH_SLUG}    -p ${N8N_PORT}:5678    n8nio/n8n:latest
+                        docker run -d --name qdrant-${BRANCH_SLUG} --network fstm_network --network-alias qdrant-${BRANCH_SLUG} -p ${QDRANT_PORT}:6333 qdrant/qdrant:latest
+                        docker run -d --name n8n-${BRANCH_SLUG}    --network fstm_network --network-alias n8n-${BRANCH_SLUG}    -p ${N8N_PORT}:5678    n8nio/n8n:latest
                         '''
                     }
                     sh 'sleep 5'
@@ -296,8 +296,8 @@ print(len(cols))
             script {
                 if (env.IS_MAIN == 'false') {
                     echo "Succès détecté sur branche feature : Nettoyage des conteneurs éphémères..."
-                    sh "docker stop qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
-                    sh "docker rm   qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
+                    sh "docker stop qdrant-${env.BRANCH_SLUG} n8n-${env.BRANCH_SLUG} || true"
+                    sh "docker rm   qdrant-${env.BRANCH_SLUG} n8n-${env.BRANCH_SLUG} || true"
                 }
             }
         }
@@ -305,8 +305,8 @@ print(len(cols))
             script {
                 if (env.IS_MAIN == 'false') {
                     echo "Échec détecté sur branche feature : Nettoyage des conteneurs éphémères..."
-                    sh "docker stop qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
-                    sh "docker rm   qdrant_${env.BRANCH_SLUG} n8n_${env.BRANCH_SLUG} || true"
+                    sh "docker stop qdrant-${env.BRANCH_SLUG} n8n-${env.BRANCH_SLUG} || true"
+                    sh "docker rm   qdrant-${env.BRANCH_SLUG} n8n-${env.BRANCH_SLUG} || true"
                 } else {
                     echo "Échec détecté sur main — Conteneurs permanents préservés."
                 }
