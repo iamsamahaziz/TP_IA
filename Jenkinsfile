@@ -36,8 +36,8 @@ pipeline {
                         env.IS_MAIN = 'true'
                         env.QDRANT_PORT = '6333'
                         env.N8N_PORT = '5678'
-                        env.QDRANT_CONTAINER = 'fstm_qdrant'
-                        env.N8N_CONTAINER = 'fstm_n8n'
+                        env.QDRANT_CONTAINER = 'ia_qdrant'
+                        env.N8N_CONTAINER = 'ia_n8n'
                         env.QDRANT_URL = 'http://qdrant:6333'
                         env.N8N_URL = 'http://n8n:5678'
                         env.VENV = "/var/jenkins_home/venv/projet_ia"
@@ -126,46 +126,46 @@ print('OK:', '$f')
                     # Installation Docker si absent
                     command -v docker || apt-get install -y docker.io
 
-                    # Réseau commun fstm_network
-                    docker network create fstm_network 2>/dev/null || true
-                    docker network connect fstm_network fstm_jenkins 2>/dev/null || true
+                    # Réseau commun ia_network
+                    docker network create ia_network 2>/dev/null || true
+                    docker network connect ia_network fstm_jenkins 2>/dev/null || true
                     '''
 
                     if (env.IS_MAIN == 'true') {
                         // En production (main), on déploie ou démarre sans tout casser
                         sh '''
                         # ── Qdrant Production ──
-                        if ! docker ps -a --format "{{.Names}}" | grep -q "^fstm_qdrant$"; then
+                        if ! docker ps -a --format "{{.Names}}" | grep -q "^ia_qdrant$"; then
                             echo "Déploiement initial de Qdrant..."
                             docker run -d \
-                                --name fstm_qdrant \
-                                --network fstm_network \
+                                --name ia_qdrant \
+                                --network ia_network \
                                 --network-alias qdrant \
                                 -p 6333:6333 \
                                 --restart unless-stopped \
                                 qdrant/qdrant:latest
-                        elif ! docker ps --format "{{.Names}}" | grep -q "^fstm_qdrant$"; then
-                            echo "Démarrage de fstm_qdrant arrêté..."
-                            docker start fstm_qdrant
+                        elif ! docker ps --format "{{.Names}}" | grep -q "^ia_qdrant$"; then
+                            echo "Démarrage de ia_qdrant arrêté..."
+                            docker start ia_qdrant
                         else
-                            echo "fstm_qdrant est déjà en cours d'exécution."
+                            echo "ia_qdrant est déjà en cours d'exécution."
                         fi
 
                         # ── n8n Production ──
-                        if ! docker ps -a --format "{{.Names}}" | grep -q "^fstm_n8n$"; then
+                        if ! docker ps -a --format "{{.Names}}" | grep -q "^ia_n8n$"; then
                             echo "Déploiement initial de n8n..."
                             docker run -d \
-                                --name fstm_n8n \
-                                --network fstm_network \
+                                --name ia_n8n \
+                                --network ia_network \
                                 --network-alias n8n \
                                 -p 5678:5678 \
                                 --restart unless-stopped \
                                 n8nio/n8n:latest
-                        elif ! docker ps --format "{{.Names}}" | grep -q "^fstm_n8n$"; then
-                            echo "Démarrage de fstm_n8n arrêté..."
-                            docker start fstm_n8n
+                        elif ! docker ps --format "{{.Names}}" | grep -q "^ia_n8n$"; then
+                            echo "Démarrage de ia_n8n arrêté..."
+                            docker start ia_n8n
                         else
-                            echo "fstm_n8n est déjà en cours d'exécution."
+                            echo "ia_n8n est déjà en cours d'exécution."
                         fi
                         '''
                     } else {
@@ -174,8 +174,8 @@ print('OK:', '$f')
                         docker stop qdrant-${BRANCH_SLUG} n8n-${BRANCH_SLUG} || true
                         docker rm   qdrant-${BRANCH_SLUG} n8n-${BRANCH_SLUG} || true
 
-                        docker run -d --name qdrant-${BRANCH_SLUG} --network fstm_network --network-alias qdrant-${BRANCH_SLUG} -p ${QDRANT_PORT}:6333 qdrant/qdrant:latest
-                        docker run -d --name n8n-${BRANCH_SLUG}    --network fstm_network --network-alias n8n-${BRANCH_SLUG}    -p ${N8N_PORT}:5678    n8nio/n8n:latest
+                        docker run -d --name qdrant-${BRANCH_SLUG} --network ia_network --network-alias qdrant-${BRANCH_SLUG} -p ${QDRANT_PORT}:6333 qdrant/qdrant:latest
+                        docker run -d --name n8n-${BRANCH_SLUG}    --network ia_network --network-alias n8n-${BRANCH_SLUG}    -p ${N8N_PORT}:5678    n8nio/n8n:latest
                         '''
                     }
                     sh 'sleep 5'
