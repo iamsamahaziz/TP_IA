@@ -1,6 +1,9 @@
 import requests
 import time
 import os
+
+print(f"🔎 DEBUG: requests path = {getattr(requests, '__file__', 'None (built-in or namespace)')}")
+print(f"🔎 DEBUG: requests dir = {dir(requests)}")
 # 🔁 Custom, robust retry decorator (fully compatible with Python 3.13, no external dependencies)
 def retry(tries=3, delay=2, backoff=2):
     def decorator(func):
