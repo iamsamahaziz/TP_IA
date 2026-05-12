@@ -17,7 +17,7 @@ services:
 
   # ─── Notre interface graphique de métriques (Grafana) ───
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana-enterprise:latest
     container_name: ia_grafana
     user: "0"  # Force l'exécution en ROOT pour contourner tout blocage de permission Windows/WSL2 !
     ports:
