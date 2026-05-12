@@ -248,28 +248,9 @@ print('OK:', '$f')
         stage('5. Installation') {
             steps {
                 sh '''
-                # Vérification de l'intégrité de l'environnement virtuel existant (ex: requests)
-                if [ -d "$VENV" ]; then
-                    if ! "$PYTHON" -c "import requests; requests.get" >/dev/null 2>&1; then
-                        echo "⚠️ Environnement virtuel corrompu détecté (ex: requests vide). Recréation à neuf..."
-                        rm -rf "$VENV"
-                    fi
-                fi
-
-                [ ! -d "$VENV" ] && python3 -m venv "$VENV"
-
-                # Vérifie si tous les packages sont déjà installés
-                echo "Vérification des packages..."
-                MISSING=$("$PIP" install --dry-run -r requirements.txt 2>&1 | grep "Would install" || echo "")
-
-                if [ -z "$MISSING" ]; then
-                    echo "Tous les packages déjà installés — rien à faire."
-                else
-                    echo "Packages manquants : $MISSING"
-                    "$PIP" install --upgrade pip -q
-                    "$PIP" install -r requirements.txt -q --cache-dir "/var/jenkins_home/.pip_cache"
-                    echo "Installation terminée avec succès."
-                fi
+                rm -rf "$VENV"
+                python3 -m venv "$VENV"
+                "$PIP" install -r requirements.txt -q --cache-dir "/var/jenkins_home/.pip_cache"
                 '''
             }
         }
