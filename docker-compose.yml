@@ -19,6 +19,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: ia_grafana
+    user: "0"  # Force l'exécution en ROOT pour contourner tout blocage de permission Windows/WSL2 !
     ports:
       - "3002:3000"  # Permet d'ouvrir Grafana sur votre navigateur (http://localhost:3002)
     volumes:
