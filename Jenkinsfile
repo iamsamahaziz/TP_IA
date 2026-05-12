@@ -134,6 +134,10 @@ print('OK:', '$f')
                     if (env.IS_MAIN == 'true') {
                         // En production (main), on déploie ou démarre sans tout casser
                         sh '''
+                        # Nettoyage automatique des anciens conteneurs pour appliquer les nouveaux ports
+                        docker rm -f ia_qdrant || true
+                        docker rm -f ia_n8n || true
+
                         # ── Qdrant Production ──
                         if ! docker ps -a --format "{{.Names}}" | grep -q "^ia_qdrant$"; then
                             echo "Déploiement initial de Qdrant..."
