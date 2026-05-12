@@ -248,6 +248,14 @@ print('OK:', '$f')
         stage('5. Installation') {
             steps {
                 sh '''
+                # Vérification de l'intégrité de l'environnement virtuel existant (ex: requests)
+                if [ -d "$VENV" ]; then
+                    if ! "$PYTHON" -c "import requests; requests.get" >/dev/null 2>&1; then
+                        echo "⚠️ Environnement virtuel corrompu détecté (ex: requests vide). Recréation à neuf..."
+                        rm -rf "$VENV"
+                    fi
+                fi
+
                 [ ! -d "$VENV" ] && python3 -m venv "$VENV"
 
                 # Vérifie si tous les packages sont déjà installés
