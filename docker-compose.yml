@@ -27,11 +27,10 @@ services:
       - ia_network
     restart: unless-stopped
 
-# ─── Déclaration du réseau et des volumes ───
+# ─── Déclaration du réseau existant et des volumes ───
 networks:
   ia_network:
-    name: ia_network  # Crée automatiquement le réseau commun ia_network s'il n'existe pas !
-    driver: bridge
+    external: true  # Le réseau commun est géré extérieurement (créé par le pipeline Jenkins !)
 
 volumes:
   prometheus_data:
