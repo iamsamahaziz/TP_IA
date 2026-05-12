@@ -34,8 +34,8 @@ pipeline {
                     if (env.BRANCH_SLUG == 'main' || env.BRANCH_SLUG == 'master') {
                         // Configuration de Production (Branche main)
                         env.IS_MAIN = 'true'
-                        env.QDRANT_PORT = '6333'
-                        env.N8N_PORT = '5678'
+                        env.QDRANT_PORT = '6334'
+                        env.N8N_PORT = '5679'
                         env.QDRANT_CONTAINER = 'ia_qdrant'
                         env.N8N_CONTAINER = 'ia_n8n'
                         env.QDRANT_URL = 'http://qdrant:6333'
@@ -141,7 +141,7 @@ print('OK:', '$f')
                                 --name ia_qdrant \
                                 --network ia_network \
                                 --network-alias qdrant \
-                                -p 6333:6333 \
+                                -p 6334:6333 \
                                 --restart unless-stopped \
                                 qdrant/qdrant:latest
                         elif ! docker ps --format "{{.Names}}" | grep -q "^ia_qdrant$"; then
@@ -158,7 +158,7 @@ print('OK:', '$f')
                                 --name ia_n8n \
                                 --network ia_network \
                                 --network-alias n8n \
-                                -p 5678:5678 \
+                                -p 5679:5678 \
                                 --restart unless-stopped \
                                 n8nio/n8n:latest
                         elif ! docker ps --format "{{.Names}}" | grep -q "^ia_n8n$"; then
