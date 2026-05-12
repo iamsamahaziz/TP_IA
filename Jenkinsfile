@@ -128,7 +128,7 @@ print('OK:', '$f')
 
                     # Réseau commun ia_network
                     docker network create ia_network 2>/dev/null || true
-                    docker network connect ia_network fstm_jenkins 2>/dev/null || true
+                    docker network connect --alias jenkins ia_network fstm_jenkins 2>/dev/null || true
                     '''
 
                     if (env.IS_MAIN == 'true') {
@@ -162,6 +162,7 @@ print('OK:', '$f')
                                 --name ia_n8n \
                                 --network ia_network \
                                 --network-alias n8n \
+                                -e N8N_METRICS=true \
                                 -p 5679:5678 \
                                 --restart unless-stopped \
                                 n8nio/n8n:latest
@@ -179,7 +180,7 @@ print('OK:', '$f')
                         docker rm   qdrant-${BRANCH_SLUG} n8n-${BRANCH_SLUG} || true
 
                         docker run -d --name qdrant-${BRANCH_SLUG} --network ia_network --network-alias qdrant-${BRANCH_SLUG} -p ${QDRANT_PORT}:6333 qdrant/qdrant:latest
-                        docker run -d --name n8n-${BRANCH_SLUG}    --network ia_network --network-alias n8n-${BRANCH_SLUG}    -p ${N8N_PORT}:5678    n8nio/n8n:latest
+                        docker run -d --name n8n-${BRANCH_SLUG}    --network ia_network --network-alias n8n-${BRANCH_SLUG}    -p ${N8N_PORT}:5678 -e N8N_METRICS=true n8nio/n8n:latest
                         '''
                     }
                     sh 'sleep 5'

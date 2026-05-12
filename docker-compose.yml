@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+
+  # ─── Notre facteur de métriques (Prometheus) ───
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ia_prometheus
+    ports:
+      - "9090:9090"  # Permet d'ouvrir l'interface de Prometheus sur votre navigateur (http://localhost:9090)
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro  # On donne notre fichier de config à Prometheus
+      - prometheus_data:/prometheus  # Pour que Prometheus garde ses données en mémoire même s'il redémarre
+    networks:
+      - ia_network  # Connexion au réseau de votre projet d'IA pour pouvoir "discuter" avec Qdrant et Jenkins
+    restart: unless-stopped
+
+  # ─── Notre interface graphique de métriques (Grafana) ───
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ia_grafana
+    ports:
+      - "3000:3000"  # Permet d'ouvrir Grafana sur votre navigateur (http://localhost:3000)
+    volumes:
+      - grafana_data:/var/lib/grafana  # Pour que Grafana garde vos dashboards et utilisateurs en mémoire
+    networks:
+      - ia_network
+    restart: unless-stopped
+
+# ─── Déclaration du réseau existant et des volumes ───
+networks:
+  ia_network:
+    external: true  # Le réseau commun est géré extérieurement (créé par le pipeline Jenkins !)
+
+volumes:
+  prometheus_data:
+  grafana_data:
