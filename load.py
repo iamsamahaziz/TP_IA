@@ -1,7 +1,23 @@
 import requests
 import time
 import os
-from retry import retry
+# 🔁 Custom, robust retry decorator (fully compatible with Python 3.13, no external dependencies)
+def retry(tries=3, delay=2, backoff=2):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            t = tries
+            d = delay
+            while t > 1:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    print(f"⚠️ Exception: {e}. Essai restant: {t-1}. Retrying in {d} seconds...")
+                    time.sleep(d)
+                    t -= 1
+                    d *= backoff
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 # 🔐 clé depuis variable d'environnement
 MISTRAL_KEY = os.getenv("MISTRAL_KEY") or os.getenv("MISTRAL_API_KEY")
